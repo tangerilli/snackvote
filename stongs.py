@@ -41,9 +41,33 @@ class Category(object):
     def __repr__(self):
         return str(self)
         
+    def slugified(self):
+        return self.name.lower().replace(" ", "_").replace("/", "_")
+        
     def as_url(self):
-        return self.name.lower().replace(" ", "_")
-
+        components = [self.slugified()]
+        parent = self.parent
+        while parent:
+            components.append(parent.slugified())
+            parent = parent.parent
+        components.reverse()
+        return "/".join(components)
+        
+    def find_child(self, child_name):
+        for child in self.children:
+            if child.slugified() == child_name:
+                return child
+        return None
+        
+    def get_parents(self):
+        parents = [self]
+        parent = self.parent
+        while parent:
+            parents.append(parent)
+            parent = parent.parent
+        parents.reverse()
+        return parents
+        
 def _get_page(url):
     cached_pages = cache.setdefault("cached_pages", {})
     # TODO: Add expiration times
@@ -79,7 +103,7 @@ def get_category_list():
         raise ParseError("Could not find top-level category list")
     cat_data = category_match.groups(0)[0]
     cat_id_data = category_id_match.groups(0)[0]
-    categories = [c.replace("'", "") for c in cat_data.split("','")]
+    categories = [c.replace("'", "").replace("\\", "") for c in cat_data.split("','")]
     category_ids = cat_id_data.split(",")
     for name, id in zip(categories, category_ids):
         category = Category(name, id)
@@ -92,7 +116,7 @@ def get_category_list():
         raise ParseError("Could not find groups list")
     groups_data = groups_match.groups(0)[0]
     groups_id_data = groups_id_match.groups(0)[0]
-    groups = [c.replace("'", "") for c in groups_data.split("','")]
+    groups = [c.replace("'", "").replace("\\", "") for c in groups_data.split("','")]
     group_ids = groups_id_data.split("','")
     for idx, (name_list, id_list) in enumerate(zip(groups, group_ids)):
         parent_cat = category_list[idx]
@@ -107,7 +131,7 @@ def get_category_list():
         raise ParseError("Could not find products list")
     products_data = products_match.groups(0)[0]
     products_id_data = products_id_match.groups(0)[0]
-    products = [c.replace("'", "") for c in products_data.split("','")]
+    products = [c.replace("'", "").replace("\\", "") for c in products_data.split("','")]
     products_ids = products_id_data.split("','")
     for idx, (name_list, id_list) in enumerate(zip(products, products_ids)):
         parent_cat = group_list[idx]
@@ -130,7 +154,10 @@ def get_products(category):
     for row in table.findAll("tr", {"valign":"top"}):
         cells = row.findAll("td")
         title = cells[1].b.string
-        price = cells[2].string.strip()
+        if cells[2].string:
+            price = cells[2].string.strip()
+        else:
+            price = "NA"
         order_input = cells[3].input
         product_id = int(order_input['id'].replace("sub_", ""))
         products.append((title, price, product_id, url))

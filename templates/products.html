@@ -1,0 +1,52 @@
+<%inherit file="/base.html"/>
+
+<%block name="on_doc_ready">
+    function vote(element, direction, type) {
+        var product_id = element.attr("product_id");
+        $.post(window.location.pathname + "/" + product_id, {direction:direction, vote_type:type}, function(data) {
+            console.debug(data.vote_status);
+            $(".up_" + product_id).removeClass("upmod up");
+            $(".down_" + product_id).removeClass("downmod down");
+            if(data.vote_status == "up") {
+                $(".up_" + product_id).addClass("upmod");
+                $(".down_" + product_id).addClass("down");
+            } else if(data.vote_status == "down") {
+                $(".down_" + product_id).addClass("downmod");
+                $(".up_" + product_id).addClass("up");
+            } else {
+                $(".up_" + product_id).addClass("up");
+                $(".down_" + product_id).addClass("down");
+            }
+        }, "json");
+    }
+
+    $(".arrow").click(function() {
+        element = $(this);
+        if(element.hasClass("up")) {
+            vote($(this), "up", "add");
+        } else if(element.hasClass("down")) {
+            vote($(this), "down", "add");
+        } else if(element.hasClass("downmod")) {
+            vote($(this), "down", "remove");
+        } else if(element.hasClass("upmod")) {
+            vote($(this), "up", "remove");
+        }
+    });
+</%block>
+
+<ul class="product_list">
+    % for product_name, price, id, url in products:
+    <li>
+        <table>
+            <tr>
+                <td class="arrow up up_${id}" product_id="${id}" />
+                <td><a href="${url}">${product_name}</a></td>
+            </tr>
+            <tr>
+                <td class="arrow down down_${id}" product_id="${id}" />
+                <td>23 points | ${price}</td>
+            </tr>
+        </table>
+    </li>
+    % endfor
+</ul>

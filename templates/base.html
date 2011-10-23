@@ -1,0 +1,36 @@
+<html>
+    <head>
+        <title>Snackvote!</title>
+        <link rel="stylesheet" type="text/css" href="/static/base.css" />
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.5/jquery.min.js" type="text/javascript"></script> 
+        <script>
+        $(document).ready(function(){
+            $('ul.category_list li:nth-child(odd)').addClass('alternate');
+            $('ul.category_list li:nth-child(even)').addClass('primary');
+            
+            <%block name="on_doc_ready"/>
+        });
+        </script>
+    </head>
+    <body>
+        <div class="header"><span class="title">Snack Voter</span></div>
+        
+        <div class="menu">
+            <span class="links"><a href="/browse">browse</a> | <a href="/top">top</a></span>
+        </div>
+        
+        <div class="content">
+            <div class="navigation">
+                % if current:
+                    Viewing: 
+                    % for parent in current.get_parents():
+                    / <a href="/browse/${parent.as_url()}">${parent}</a>
+                    % endfor
+                % endif
+            </div>
+        
+            ${self.body()}
+        </div>
+        
+    </body>
+</html>

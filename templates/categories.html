@@ -1,0 +1,8 @@
+<%inherit file="/base.html"/>
+
+
+<ul class="category_list">
+    % for category in categories:
+    <li><a href="/browse/${category.as_url()}">${category}</a></li>
+    % endfor
+</ul>

@@ -1,0 +1,103 @@
+body {
+    padding: 0px;
+    margin: 0px;
+}
+
+a {
+    color: blue;
+}
+
+div.content {
+    padding: 5px;
+}
+
+div.header {
+    width: 100%;
+    height: 40px;
+    background-color: #69C;
+    text-align: left;
+    font-size: 24px;
+    padding-top: 12px;
+}
+
+div.header span.title {
+    padding-left: 3px;
+}
+
+div.menu {
+    width: 100%;
+    background-color: #999;
+    padding-top: 3px;
+    padding-bottom: 3px;
+}
+
+div.menu span.links {
+    padding-left: 3px;
+}
+
+div.menu a {
+    color: blue;
+}
+
+div.navigation a {
+    color: blue;
+}
+
+ul.category_list {
+    list-style-type: none;
+    padding-left: 0px;
+}
+
+ul.category_list li {
+    width: 100%;
+    padding-top: 2px;
+}
+
+ul.category_list li a{
+    color: blue;
+}
+
+ul.category_list li:hover {
+    background-color: #CCC;
+}
+
+
+ul.product_list {
+    list-style-type: none;
+    padding-left: 0px;
+}
+
+ul.product_list li {
+    list-style-type: none;
+    padding-top: 3px;
+    
+
+}
+
+.voting {
+    float: left;
+}
+
+.arrow {
+ background-position: center center;
+ background-repeat: no-repeat; 
+ cursor: pointer;
+ width: 15px;
+}
+
+.arrow.upmod { 
+ background-image: url(/static/sprite.png?);
+ background-position: -4px -227px;
+}
+.arrow.downmod { 
+ background-image: url(/static/sprite.png);
+ background-position: -4px -249px;
+}
+.arrow.up { 
+ background-image: url(/static/sprite.png?);
+ background-position: -4px -271px;
+}
+.arrow.down { 
+ background-image: url(/static/sprite.png?);
+ background-position: -4px -293px;
+}
