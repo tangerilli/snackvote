@@ -1,0 +1,8 @@
+BeautifulSoup==3.2.0
+CherryPy==3.2.2
+Mako==0.5.0
+MarkupSafe==0.15
+SQLAlchemy==0.7.3
+requests==0.6.6
+simplejson==2.2.1
+wsgiref==0.1.2
