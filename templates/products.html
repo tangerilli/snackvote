@@ -4,7 +4,7 @@
     function vote(element, direction, type) {
         var product_id = element.attr("product_id");
         $.post(window.location.pathname + "/" + product_id, {direction:direction, vote_type:type}, function(data) {
-            console.debug(data.vote_status);
+            $("#votes_" + product_id).html(data.vote_count);
             $(".up_" + product_id).removeClass("upmod up");
             $(".down_" + product_id).removeClass("downmod down");
             if(data.vote_status == "up") {
@@ -35,16 +35,27 @@
 </%block>
 
 <ul class="product_list">
-    % for product_name, price, id, url in products:
+    % for product_name, price, id, url, vote_class, vote_count in products:
+    <%
+    if vote_class == "up":
+        upclass = "upmod"
+        downclass = "down"
+    elif vote_class == "down":
+        upclass = "up"
+        downclass = "downmod"
+    else:
+        upclass = "up"
+        downclass = "down"
+    %>
     <li>
         <table>
             <tr>
-                <td class="arrow up up_${id}" product_id="${id}" />
+                <td class="arrow up_${id} ${upclass}" product_id="${id}" />
                 <td><a href="${url}">${product_name}</a></td>
             </tr>
             <tr>
-                <td class="arrow down down_${id}" product_id="${id}" />
-                <td>23 points | ${price}</td>
+                <td class="arrow down_${id} ${downclass}" product_id="${id}" />
+                <td><span id="votes_${id}">${vote_count}</span> points | ${price}</td>
             </tr>
         </table>
     </li>

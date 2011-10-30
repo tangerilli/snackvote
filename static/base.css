@@ -14,7 +14,7 @@ div.content {
 div.header {
     width: 100%;
     height: 40px;
-    background-color: #69C;
+    background-color: #69D2E7;
     text-align: left;
     font-size: 24px;
     padding-top: 12px;
@@ -26,7 +26,7 @@ div.header span.title {
 
 div.menu {
     width: 100%;
-    background-color: #999;
+    background-color: #E0E4CC;
     padding-top: 3px;
     padding-bottom: 3px;
 }
@@ -58,7 +58,7 @@ ul.category_list li a{
 }
 
 ul.category_list li:hover {
-    background-color: #CCC;
+    background-color: #F38630;
 }
 
 
@@ -70,8 +70,6 @@ ul.product_list {
 ul.product_list li {
     list-style-type: none;
     padding-top: 3px;
-    
-
 }
 
 .voting {
