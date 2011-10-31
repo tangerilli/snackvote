@@ -7,9 +7,7 @@ import simplejson
 # This probably can refactor alot instead of copy and pasting
 def get_product_images(product_name):
     query = product_name.strip()
-    query = query.replace("%", "%25")
-    query = query.replace(" ", "%20")
-    query = query.replace("'", "\'")
+    query = urllib2.quote(query)
     
     # print product_name
     # print query
