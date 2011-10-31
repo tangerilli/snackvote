@@ -35,7 +35,7 @@
 </%block>
 
 <ul class="product_list">
-    % for product_name, price, id, url, vote_class, vote_count in products:
+    % for product_name, price, id, url, image0, image1, image2, image3, vote_class, vote_count in products:
     <%
     if vote_class == "up":
         upclass = "upmod"
@@ -56,6 +56,12 @@
             <tr>
                 <td class="arrow down_${id} ${downclass}" product_id="${id}" />
                 <td><span id="votes_${id}">${vote_count}</span> points | ${price}</td>
+            </tr>
+            <tr>
+                <td><img width=96 height=96 src="${image0}"></td>
+                <td><img width=96 height=96 src="${image1}"></td>
+                <td><img width=96 height=96 src="${image2}"></td>
+                <td><img width=96 height=96 src="${image3}"></td>
             </tr>
         </table>
     </li>
