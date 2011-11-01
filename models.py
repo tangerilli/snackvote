@@ -24,12 +24,23 @@ class Product(Base):
     name = Column(String)
     url = Column(String)
     price = Column(String)
+    internal_url = Column(String)
     
-    def __init__(self, product_id, name, url, price):
+    def __init__(self, product_id, name, url, price, internal_url = ""):
         self.id = product_id
         self.name = name
         self.url = url
         self.price = price
+        self.internal_url = internal_url
+        
+    def get_points(self):
+        total_points = 0
+        for vote in self.votes:
+            days = (time.time() - vote.timestamp) / (60.0 * 60.0 * 24)
+            # A vote has the most points when it is the most recent and decreases in value as it gets older
+            points = int(round(max(7-days, .5) * vote.value))
+            total_points += points
+        return total_points
 
 class Vote(Base):
     __tablename__ = 'votes'

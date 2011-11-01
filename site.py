@@ -28,6 +28,19 @@ from models import Product, User, Vote
 import models
 
 import stongs
+
+VOTE_LENGTH = (60*60*24*1) # 7 days earlier than now
+
+class ProductInfo(object):
+    def __init__(self, name, price, product_id, url, internal_url=None):
+        self.name = name
+        self.price = price
+        self.id = product_id
+        self.url = url
+        self.internal_url = internal_url
+        
+    def set_internal_url(self, *args):
+        self.internal_url = "/".join(args)
     
 def get_vote_class(vote):
     if vote:
@@ -49,22 +62,22 @@ def get_user(username):
     return user
 
 def get_product(product_info):
-    product_name, price, product_id, url = product_info
-    product = cherrypy.request.db.query(Product).filter(Product.id == product_id).first()
+    product = cherrypy.request.db.query(Product).filter(Product.id == product_info.id).first()
     if product is None:
-        product = Product(product_id, product_name, url, price)
+        product = Product(product_info.id, product_info.name, product_info.url, product_info.price, product_info.internal_url)
         cherrypy.request.db.add(product)
     return product
 
 def get_vote(product_id, user):
-    # TODO: Once multiple votes are allowed, will want to get most recent vote
-    return cherrypy.request.db.query(Vote).filter(Vote.user == user).filter(Vote.product_id == product_id).first()
+    threshold = time.time() - VOTE_LENGTH
+    vote_qry = cherrypy.request.db.query(Vote).filter(Vote.user == user).filter(Vote.product_id == product_id)
+    return vote_qry.filter(Vote.timestamp > threshold).order_by(Vote.timestamp).first()
 
 def get_vote_count(product_id):
-    count = 0
-    for vote in cherrypy.request.db.query(Vote).filter(Vote.product_id == product_id):
-        count += vote.value
-    return count
+    product = cherrypy.request.db.query(Product).filter(Product.id == product_id).first()
+    if not product:
+        return 0
+    return product.get_points()
     
 def get_username():
     auth_header = cherrypy.request.headers.get("Authorization", "")
@@ -89,7 +102,7 @@ class browse(object):
         username = get_username()
         user = get_user(username)
         product = get_product(product_info)
-        vote = cherrypy.request.db.query(Vote).filter(Vote.user == user).filter(Vote.product == product).first()
+        vote = get_vote(product.id, user)
         if vote is None:
             vote = Vote(product, user, 0)
             cherrypy.request.db.add(vote)
@@ -102,13 +115,13 @@ class browse(object):
             else:
                 vote.value = -1
         
-        response = {"vote_status":direction, "vote_count":get_vote_count(product.id)}
+        response = {"vote_status":direction, "vote_count":product.get_points()}
         return simplejson.dumps(response)
 
     def find_product_info(self, product_id, products):
         for product_name, price, id, url in products:
             if str(id) == str(product_id):
-                return (product_name, price, id, url)
+                return ProductInfo(product_name, price, id, url)
         return None
 
     def index(self):
@@ -142,6 +155,7 @@ class browse(object):
                 product_info = self.find_product_info(product_id, products)
                 if product_info is None:
                     raise cherrypy.HTTPError(404, "Unknown product id %s" % product_id)
+                product_info.set_internal_url(category_name, subcategory_name, product_category_name)
                 return self.handle_vote(product_info, direction, vote_type)                
             else:
                 # TODO: Could return the number of votes or other info about this product for GET
@@ -159,7 +173,9 @@ class browse(object):
                     # TODO: Ignore votes for this user older than a week or so
                     vote = get_vote(product_id, user)
                     vote_class = get_vote_class(vote)
-                    full_products.append((product_name, price, product_id, url, vote_class, get_vote_count(product_id)))
+                    product_info = ProductInfo(product_name, price, product_id, url)
+                    product_info.set_internal_url(category_name, subcategory_name, product_category_name)
+                    full_products.append((product_info, vote_class, get_vote_count(product_id)))
                 return template.render(products=full_products, current=product_category)
             elif subcategory:
                 return template.render(categories=subcategory.children, current=subcategory)
@@ -177,20 +193,16 @@ class top(object):
         for product in cherrypy.request.db.query(Product).join(Vote).filter(Vote.value > 0):
             vote = get_vote(product.id, user)
             vote_class = get_vote_class(vote)
-            total_points = 0
-            for vote in product.votes:
-                days = (time.time() - vote.timestamp) / (60.0 * 60.0 * 24)
-                # A vote has the most points when it is the most recent and decreases in value as it gets older
-                points = int(round(max(7-days, .5) * vote.value))
-                total_points += points
+            total_points = product.get_points()
                 
-            products.append((product.name, product.price, product.id, product.url, vote_class, total_points))
+            products.append((product, vote_class, total_points))
             
         def cmp_products(x, y):    
-            name, price, id, url, vote_type, x_votes = x
-            name, price, id, url, vote_type, y_votes = y
+            product_info, vote_type, x_votes = x
+            product_info, vote_type, y_votes = y
             return cmp(x_votes, y_votes)
         products.sort(cmp_products)
+        products.reverse()
         return template.render(products=products, current=None)
     index.exposed = True
 
