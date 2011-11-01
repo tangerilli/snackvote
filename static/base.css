@@ -35,12 +35,28 @@ div.menu span.links {
     padding-left: 3px;
 }
 
+span.links {
+    float: left;
+}
+
+span.about {
+    float: right;
+    padding-right: 3px;
+}
+
 div.menu a {
-    color: blue;
+    color: #69D2E7;
+    text-decoration: none;
+}
+
+span.about a {
+    color: #F38630;
+    text-decoration: none;
 }
 
 div.navigation a {
-    color: blue;
+    color: #69D2E7;
+    text-decoration: none;
 }
 
 ul.category_list {
@@ -54,7 +70,8 @@ ul.category_list li {
 }
 
 ul.category_list li a{
-    color: blue;
+    color: #1089C6;
+    text-decoration: none;
 }
 
 ul.category_list li:hover {
@@ -70,6 +87,11 @@ ul.product_list {
 ul.product_list li {
     list-style-type: none;
     padding-top: 3px;
+}
+
+ul.product_list li a {
+    color: #1089C6;
+    text-decoration: none;
 }
 
 .voting {
