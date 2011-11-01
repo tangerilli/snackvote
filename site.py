@@ -28,6 +28,9 @@ from models import Product, User, Vote
 import models
 
 import stongs
+
+VOTE_LENGTH = (60*60*24*1) # 7 days earlier than now
+
 class ProductInfo(object):
     def __init__(self, name, price, product_id, url, internal_url=None):
         self.name = name
@@ -66,8 +69,9 @@ def get_product(product_info):
     return product
 
 def get_vote(product_id, user):
-    # TODO: Once multiple votes are allowed, will want to get most recent vote
-    return cherrypy.request.db.query(Vote).filter(Vote.user == user).filter(Vote.product_id == product_id).first()
+    threshold = time.time() - VOTE_LENGTH
+    vote_qry = cherrypy.request.db.query(Vote).filter(Vote.user == user).filter(Vote.product_id == product_id)
+    return vote_qry.filter(Vote.timestamp > threshold).order_by(Vote.timestamp).first()
 
 def get_vote_count(product_id):
     product = cherrypy.request.db.query(Product).filter(Product.id == product_id).first()
@@ -98,7 +102,7 @@ class browse(object):
         username = get_username()
         user = get_user(username)
         product = get_product(product_info)
-        vote = cherrypy.request.db.query(Vote).filter(Vote.user == user).filter(Vote.product == product).first()
+        vote = get_vote(product.id, user)
         if vote is None:
             vote = Vote(product, user, 0)
             cherrypy.request.db.add(vote)
