@@ -35,6 +35,10 @@ div.menu span.links {
     padding-left: 3px;
 }
 
+div.image_block {
+    display: none;
+}
+
 span.links {
     float: left;
 }

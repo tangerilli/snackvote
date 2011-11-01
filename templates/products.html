@@ -41,19 +41,18 @@ google.load("search", "1");
     });
     
     
-    $(".image_block").each(function(idx, el) {
+    $("a.pic_link").hover(function() {
+        console.debug("Loading images");
         var imageSearch = new google.search.ImageSearch();
         imageSearch.setRestriction(google.search.ImageSearch.RESTRICT_IMAGESIZE, google.search.ImageSearch.IMAGESIZE_MEDIUM);
-        var product_id = $(el).attr("product_id");
-        var product_name = $(el).attr("product_name");
-        //imageSearch.setSearchCompleteCallback(this, searchComplete, [imageSearch, product_id]);
+        var product_id = $(this).attr("product_id");
+        var product_name = $(this).attr("product_name");
+        var contentDiv = $('#content_' + product_id);
         imageSearch.setSearchCompleteCallback(this, function() {
             console.debug('search complete');
             if (imageSearch.results && imageSearch.results.length > 0) {
         		// Grab our content div, clear it.
-        		var contentDiv = $('#content_' + product_id);
-        		contentDiv.innerHTML = '';
-
+        		contentDiv.html('');
         		// Loop through our results, printing them to the page.
         		var results = imageSearch.results;
         		for (var i = 0; i < results.length; i++) {
@@ -68,7 +67,15 @@ google.load("search", "1");
         		}
         	}
         });
-        imageSearch.execute(product_name);
+        contentDiv.show();
+        if(!contentDiv.html()) {
+            imageSearch.execute(product_name);
+        }
+    }, function() {
+        var product_id = $(this).attr("product_id");
+        var product_name = $(this).attr("product_name");
+        var contentDiv = $('#content_' + product_id);
+        contentDiv.hide();
     });
 </%block>
 
@@ -89,15 +96,17 @@ google.load("search", "1");
         <table>
             <tr>
                 <td class="arrow up_${product_info.id} ${upclass}" product_id="${product_info.id}" category_url="${product_info.internal_url}" />
-                <td><a href="${product_info.url}">${product_info.name}</a></td>
+                <td>
+                    <a href="${product_info.url}">${product_info.name}</a> 
+                    <a href="#" class="pic_link" product_id="${product_info.id}" product_name="${product_info.name}"><img src="/static/image.png" /></a>
+                </td>
             </tr>
             <tr>
                 <td class="arrow down_${product_info.id} ${downclass}" product_id="${product_info.id}" category_url="${product_info.internal_url}" />
                 <td><span id="votes_${product_info.id}">${vote_count}</span> points | ${product_info.price}</td>
             </tr>
         </table>
-        <div id='content_${product_info.id}' product_id="${product_info.id}" product_name="${product_info.name}" class="image_block">
-        </div>
+        <div id='content_${product_info.id}' class="image_block"></div>
     </li>
     % endfor
 </ul>
