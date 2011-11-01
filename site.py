@@ -28,6 +28,16 @@ from models import Product, User, Vote
 import models
 
 import stongs
+class ProductInfo(object):
+    def __init__(self, name, price, product_id, url, internal_url=None):
+        self.name = name
+        self.price = price
+        self.id = product_id
+        self.url = url
+        self.internal_url = internal_url
+        
+    def set_internal_url(self, *args):
+        self.internal_url = "/".join(args)
     
 def get_vote_class(vote):
     if vote:
@@ -49,10 +59,9 @@ def get_user(username):
     return user
 
 def get_product(product_info):
-    product_name, price, product_id, url = product_info
-    product = cherrypy.request.db.query(Product).filter(Product.id == product_id).first()
+    product = cherrypy.request.db.query(Product).filter(Product.id == product_info.id).first()
     if product is None:
-        product = Product(product_id, product_name, url, price)
+        product = Product(product_info.id, product_info.name, product_info.url, product_info.price, product_info.internal_url)
         cherrypy.request.db.add(product)
     return product
 
@@ -108,7 +117,7 @@ class browse(object):
     def find_product_info(self, product_id, products):
         for product_name, price, id, url in products:
             if str(id) == str(product_id):
-                return (product_name, price, id, url)
+                return ProductInfo(product_name, price, id, url)
         return None
 
     def index(self):
@@ -142,6 +151,7 @@ class browse(object):
                 product_info = self.find_product_info(product_id, products)
                 if product_info is None:
                     raise cherrypy.HTTPError(404, "Unknown product id %s" % product_id)
+                product_info.set_internal_url(category_name, subcategory_name, product_category_name)
                 return self.handle_vote(product_info, direction, vote_type)                
             else:
                 # TODO: Could return the number of votes or other info about this product for GET
@@ -159,7 +169,9 @@ class browse(object):
                     # TODO: Ignore votes for this user older than a week or so
                     vote = get_vote(product_id, user)
                     vote_class = get_vote_class(vote)
-                    full_products.append((product_name, price, product_id, url, vote_class, get_vote_count(product_id)))
+                    product_info = ProductInfo(product_name, price, product_id, url)
+                    product_info.set_internal_url(category_name, subcategory_name, product_category_name)
+                    full_products.append((product_info, vote_class, get_vote_count(product_id)))
                 return template.render(products=full_products, current=product_category)
             elif subcategory:
                 return template.render(categories=subcategory.children, current=subcategory)
@@ -184,11 +196,11 @@ class top(object):
                 points = int(round(max(7-days, .5) * vote.value))
                 total_points += points
                 
-            products.append((product.name, product.price, product.id, product.url, vote_class, total_points))
+            products.append((product, vote_class, total_points))
             
         def cmp_products(x, y):    
-            name, price, id, url, vote_type, x_votes = x
-            name, price, id, url, vote_type, y_votes = y
+            product_info, vote_type, x_votes = x
+            product_info, vote_type, y_votes = y
             return cmp(x_votes, y_votes)
         products.sort(cmp_products)
         products.reverse()

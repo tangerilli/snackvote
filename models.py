@@ -24,12 +24,14 @@ class Product(Base):
     name = Column(String)
     url = Column(String)
     price = Column(String)
+    internal_url = Column(String)
     
-    def __init__(self, product_id, name, url, price):
+    def __init__(self, product_id, name, url, price, internal_url = ""):
         self.id = product_id
         self.name = name
         self.url = url
         self.price = price
+        self.internal_url = internal_url
 
 class Vote(Base):
     __tablename__ = 'votes'
