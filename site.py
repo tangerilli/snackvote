@@ -70,10 +70,10 @@ def get_vote(product_id, user):
     return cherrypy.request.db.query(Vote).filter(Vote.user == user).filter(Vote.product_id == product_id).first()
 
 def get_vote_count(product_id):
-    count = 0
-    for vote in cherrypy.request.db.query(Vote).filter(Vote.product_id == product_id):
-        count += vote.value
-    return count
+    product = cherrypy.request.db.query(Product).filter(Product.id == product_id).first()
+    if not product:
+        return 0
+    return product.get_points()
     
 def get_username():
     auth_header = cherrypy.request.headers.get("Authorization", "")
@@ -111,7 +111,7 @@ class browse(object):
             else:
                 vote.value = -1
         
-        response = {"vote_status":direction, "vote_count":get_vote_count(product.id)}
+        response = {"vote_status":direction, "vote_count":product.get_points()}
         return simplejson.dumps(response)
 
     def find_product_info(self, product_id, products):
@@ -189,12 +189,7 @@ class top(object):
         for product in cherrypy.request.db.query(Product).join(Vote).filter(Vote.value > 0):
             vote = get_vote(product.id, user)
             vote_class = get_vote_class(vote)
-            total_points = 0
-            for vote in product.votes:
-                days = (time.time() - vote.timestamp) / (60.0 * 60.0 * 24)
-                # A vote has the most points when it is the most recent and decreases in value as it gets older
-                points = int(round(max(7-days, .5) * vote.value))
-                total_points += points
+            total_points = product.get_points()
                 
             products.append((product, vote_class, total_points))
             
