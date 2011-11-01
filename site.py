@@ -191,6 +191,7 @@ class top(object):
             name, price, id, url, vote_type, y_votes = y
             return cmp(x_votes, y_votes)
         products.sort(cmp_products)
+        products.reverse()
         return template.render(products=products, current=None)
     index.exposed = True
 
