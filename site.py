@@ -28,8 +28,6 @@ from models import Product, User, Vote
 import models
 
 import stongs
-
-import google
     
 def get_vote_class(vote):
     if vote:
@@ -161,18 +159,7 @@ class browse(object):
                     # TODO: Ignore votes for this user older than a week or so
                     vote = get_vote(product_id, user)
                     vote_class = get_vote_class(vote)
-                    images = google.get_product_images(product_name)
-                    if len(images) == 4:
-                        image0 = images[0]
-                        image1 = images[1]
-                        image2 = images[2]
-                        image3 = images[3]
-                    else:
-                        image0 = ""
-                        image1 = ""
-                        image2 = ""
-                        image3 = ""
-                    full_products.append((product_name, price, product_id, url, image0, image1, image2, image3, vote_class, get_vote_count(product_id)))
+                    full_products.append((product_name, price, product_id, url, vote_class, get_vote_count(product_id)))
                 return template.render(products=full_products, current=product_category)
             elif subcategory:
                 return template.render(categories=subcategory.children, current=subcategory)

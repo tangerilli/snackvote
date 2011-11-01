@@ -1,5 +1,46 @@
 <%inherit file="/base.html"/>
 
+<script src="http://www.google.com/jsapi?key=ABQIAAAACmdH40ypgsbXr33Vko_f8hRK5p-Y_hq-RWraBX1SaR3vezWLVRThH-i3FqBui10i7eO_mon3i-dJmA" type="text/javascript"></script>
+
+<script type="text/javascript">
+ 
+google.load("search", "1");
+
+function searchComplete(searcher, id) {
+	// Check that we got results
+	if (searcher.results && searcher.results.length > 0) {
+		// Grab our content div, clear it.
+		var contentDiv = document.getElementById('content_' + id);
+		contentDiv.innerHTML = '';
+
+		// Loop through our results, printing them to the page.
+		var results = searcher.results;
+		for (var i = 0; i < results.length; i++) {
+			// For each result write it's title and image to the screen
+			var result = results[i];
+			var imgContainer = document.createElement('td');
+
+			var newImg = document.createElement('img');
+			// There is also a result.url property which has the escaped version
+			newImg.src = result.tbUrl;
+
+			imgContainer.appendChild(newImg);
+
+			// Put our title + image in the content
+			contentDiv.appendChild(newImg);
+		}
+	}
+}
+</script>
+
+<style type="text/css">
+img {
+margin-left:10px;
+margin-right:10px;
+margin-bottom:100px;
+}
+</style>
+
 <%block name="on_doc_ready">
     function vote(element, direction, type) {
         var product_id = element.attr("product_id");
@@ -35,7 +76,7 @@
 </%block>
 
 <ul class="product_list">
-    % for product_name, price, id, url, image0, image1, image2, image3, vote_class, vote_count in products:
+    % for product_name, price, id, url, vote_class, vote_count in products:
     <%
     if vote_class == "up":
         upclass = "upmod"
@@ -57,13 +98,27 @@
                 <td class="arrow down_${id} ${downclass}" product_id="${id}" />
                 <td><span id="votes_${id}">${vote_count}</span> points | ${price}</td>
             </tr>
-            <tr>
-                <td><img width=96 height=96 src="${image0}"></td>
-                <td><img width=96 height=96 src="${image1}"></td>
-                <td><img width=96 height=96 src="${image2}"></td>
-                <td><img width=96 height=96 src="${image3}"></td>
-            </tr>
         </table>
+        <script>
+            // Our ImageSearch instance.
+            var imageSearch = new google.search.ImageSearch();
+            
+            // Restrict to extra large images only
+            imageSearch.setRestriction(google.search.ImageSearch.RESTRICT_IMAGESIZE,
+                google.search.ImageSearch.IMAGESIZE_MEDIUM);
+            
+            // Here we set a callback so that anytime a search is executed, it will call
+            // the searchComplete function and pass it our ImageSearch searcher.
+            // When a search completes, our ImageSearch object is automatically
+            // populated with the results.
+            imageSearch.setSearchCompleteCallback(this, searchComplete, [imageSearch, "${id}"]);
+            
+            // Find me a beautiful car.
+            imageSearch.execute("${product_name}");
+        </script>
+        <div id='content_${id}'>
+        </div>
     </li>
     % endfor
 </ul>
+
