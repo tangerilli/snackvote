@@ -112,12 +112,12 @@ margin-bottom:100px;
             // the searchComplete function and pass it our ImageSearch searcher.
             // When a search completes, our ImageSearch object is automatically
             // populated with the results.
-            imageSearch.setSearchCompleteCallback(this, searchComplete, [imageSearch, "${id}"]);
+            imageSearch.setSearchCompleteCallback(this, searchComplete, [imageSearch, "${product_info.id}"]);
             
             // Find me a beautiful car.
-            imageSearch.execute("${product_name}");
+            imageSearch.execute("${product_info.name}");
         </script>
-        <div id='content_${id}'>
+        <div id='content_${product_info.id}'>
         </div>
     </li>
     % endfor
